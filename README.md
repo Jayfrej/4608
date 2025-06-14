@@ -63,8 +63,8 @@ tradingview-alerts-to-metatrader5/
 
    ```bash
    cd %HOMEPATH%\Downloads
-   git clone https://github.com/Jayfrej/1234.git
-   cd 1234
+   git clone https://github.com/Jayfrej/101.git
+   cd 101
    ```
 
 2. **Create a virtual environment**:if (The system cannot find the path specified) put it again
@@ -82,7 +82,7 @@ tradingview-alerts-to-metatrader5/
       ```
    3.1 **if it error**:
    ```bash
-   cd C:\Users\User\Downloads\1234
+   cd C:\Users\User\Downloads\101
    pip install -r requirements.txt
 
       ```
