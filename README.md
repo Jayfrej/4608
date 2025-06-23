@@ -63,8 +63,13 @@ tradingview-alerts-to-metatrader5/
 
    ```bash
    cd %HOMEPATH%\Downloads
+<<<<<<< HEAD
    git clone https://github.com/Jayfrej/4607.git
    cd 4607
+=======
+   git clone https://github.com/Jayfrej/101.git
+   cd 101
+>>>>>>> 4f2411c2427be0a4552acee20eabb434c0b4834b
    ```
 
 2. **Create a virtual environment**:if (The system cannot find the path specified) put it again
@@ -81,6 +86,15 @@ tradingview-alerts-to-metatrader5/
    cd C:\Users\User\Downloads\4607
    pip install -r requirements.txt
       ```
+<<<<<<< HEAD
+=======
+   3.1 **if it error**:
+   ```bash
+   cd C:\Users\User\Downloads\101
+   pip install -r requirements.txt
+
+      ```
+>>>>>>> 4f2411c2427be0a4552acee20eabb434c0b4834b
 
 4. **Configure environment variables**:
    ```bash
@@ -101,6 +115,7 @@ tradingview-alerts-to-metatrader5/
    #MT5_DEFAULT_SUFFIX= Not put anything in here / Make it from TradingView alert
    MT5_DEFAULT_SUFFIX=
 
+<<<<<<< HEAD
    # Ngrok Configuration
    NGROK_AUTH_TOKEN=your-ngrok-auth-token
 
@@ -122,6 +137,21 @@ tradingview-alerts-to-metatrader5/
 7. **MT5_PATH**:right click on your program and copy (.exe )![Screenshot 2025-06-14 230043](https://github.com/user-attachments/assets/5b21d87c-d40d-40dc-b8b8-935c6d35246f)
 
    
+=======
+   # Trading Parameters
+   # DEFAULT_VOLUME=0.01
+   # DEFAULT_STOP_LOSS=100
+   # DEFAULT_TAKE_PROFIT=200
+   
+   ```
+
+6. **Ngrok**:  Sign up and looking for Your Authtoken and put in .env![Screenshot 2025-06-14 225752](https://github.com/user-attachments/assets/8be791ec-b256-417b-b53d-e7c3d99d6491)
+
+
+7. **MT5_PATH**:right click on your program and copy (.exe )![Screenshot 2025-06-14 230043](https://github.com/user-attachments/assets/5b21d87c-d40d-40dc-b8b8-935c6d35246f)
+
+   
+>>>>>>> 4f2411c2427be0a4552acee20eabb434c0b4834b
 8. **Go MT5 press F4 put this code/save as EA**![Screenshot 2025-06-14 230259](https://github.com/user-attachments/assets/7d8d1a7f-3359-40be-8e04-dfb2d9912d4a)
 
 
