@@ -28,18 +28,20 @@ def webhook():
         symbol = data.get('symbol')
         volume = data.get('volume')
 
+        # --- NEW: Handle flexible tp/sl key names ---
+        tp = data.get('tp') or data.get('take_profit')
+        sl = data.get('sl') or data.get('stop_loss')
+
         # --- Market Orders ---
         if action in ['BUY', 'SELL', 'LONG', 'SHORT']:
-            # Normalize LONG/SHORT to BUY/SELL
             trade_action = 'BUY' if action in ['BUY', 'LONG'] else 'SELL'
             
-            # This is the corrected line that passes tp and sl
             result = mt5_handler.place_market_order(
                 symbol, 
                 float(volume), 
                 trade_action, 
-                tp=data.get('tp'), 
-                sl=data.get('sl')
+                tp=tp, 
+                sl=sl
             )
 
             if result:
@@ -50,8 +52,6 @@ def webhook():
         # --- Pending Orders (LIMIT and STOP) ---
         elif action in ['BUY_LIMIT', 'SELL_LIMIT', 'BUY_STOP', 'SELL_STOP']:
             price = data.get('price')
-            tp = data.get('tp')
-            sl = data.get('sl')
 
             if not all([symbol, volume, price]):
                 return jsonify({"error": "Missing required fields for pending order: symbol, volume, price"}), 400
