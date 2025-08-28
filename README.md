@@ -65,7 +65,7 @@ tradingview-alerts-to-metatrader5/
 1. **Clone the repository**
    ```bash
    cd %HOMEPATH%\Downloads
-   git clone https://github.com/Jayfrej/101.git
+   git clone https://github.com/Jayfrej/4607.git
    cd 101
    ```
 
@@ -270,7 +270,7 @@ The application will:
 
 ### Subsequent Runs
 ```bash
-cd C:\Users\YourUser\Downloads\101
+cd C:\Users\YourUser\Downloads\4607
 venv\Scripts\activate.bat
 python main.py
 ```
