@@ -1,253 +1,164 @@
 import MetaTrader5 as mt5
-from datetime import datetime
 import logging
+import os
+from dotenv import load_dotenv
 
+# Setup logging
 logger = logging.getLogger(__name__)
 
 class MT5Handler:
-    def __init__(self, account, password, server, path, symbol_suffix=""):
-        self.account = account
-        self.password = password
-        self.server = server
-        self.path = path
-        self.symbol_suffix = symbol_suffix
-        self.connected = False
+    def __init__(self):
+        self.is_connected = False
+        load_dotenv()
         
+        # Load credentials from .env file
+        self.mt5_account = int(os.getenv("MT5_ACCOUNT"))
+        self.mt5_password = os.getenv("MT5_PASSWORD")
+        self.mt5_server = os.getenv("MT5_SERVER")
+        self.mt5_path = os.getenv("MT5_PATH")
+
     def connect(self):
-        """Connect to MT5"""
-        try:
-            if not mt5.initialize(self.path):
-                logger.error(f"Failed to initialize MT5: {mt5.last_error()}")
-                return False
-                
-            if not mt5.login(self.account, self.password, self.server):
-                logger.error(f"Failed to login to MT5: {mt5.last_error()}")
-                return False
-                
-            self.connected = True
-            logger.info("Successfully connected to MT5")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Error connecting to MT5: {e}")
+        """Initialize connection to MetaTrader 5 terminal"""
+        if not mt5.initialize(path=self.mt5_path, login=self.mt5_account, password=self.mt5_password, server=self.mt5_server):
+            logger.error(f"initialize() failed, error code = {mt5.last_error()}")
+            self.is_connected = False
             return False
-    
-    def disconnect(self):
-        """Disconnect from MT5"""
+        
+        logger.info("Successfully connected to MT5")
+        self.is_connected = True
+        return True
+
+    def shutdown(self):
+        """Shutdown connection to the MetaTrader 5 terminal"""
         mt5.shutdown()
-        self.connected = False
         logger.info("Disconnected from MT5")
-    
-    def get_symbol_with_suffix(self, symbol):
-        """Add suffix to symbol if configured"""
-        return symbol + self.symbol_suffix
-    
-    def get_positions(self, symbol=None):
-        """Get current positions"""
-        if not self.connected:
-            return []
-            
-        try:
-            if symbol:
-                symbol = self.get_symbol_with_suffix(symbol)
-                positions = mt5.positions_get(symbol=symbol)
-            else:
-                positions = mt5.positions_get()
-                
-            return list(positions) if positions else []
-            
-        except Exception as e:
-            logger.error(f"Error getting positions: {e}")
-            return []
-    
-    def close_all_positions_by_type(self, symbol, position_type):
-        """Close all positions of specific type (buy/sell) for a symbol"""
-        symbol = self.get_symbol_with_suffix(symbol)
-        positions = self.get_positions(symbol)
-        
-        closed_positions = []
-        for position in positions:
-            if position.type == position_type:
-                try:
-                    request = {
-                        "action": mt5.TRADE_ACTION_DEAL,
-                        "symbol": symbol,
-                        "volume": position.volume,
-                        "type": mt5.ORDER_TYPE_SELL if position.type == mt5.ORDER_TYPE_BUY else mt5.ORDER_TYPE_BUY,
-                        "position": position.ticket,
-                        "price": mt5.symbol_info_tick(symbol).bid if position.type == mt5.ORDER_TYPE_BUY else mt5.symbol_info_tick(symbol).ask,
-                        "deviation": 20,
-                        "magic": 0,
-                        "comment": "Close position",
-                        "type_time": mt5.ORDER_TIME_GTC,
-                        "type_filling": mt5.ORDER_FILLING_FOK,
-                    }
-                    
-                    result = mt5.order_send(request)
-                    if result.retcode == mt5.TRADE_RETCODE_DONE:
-                        closed_positions.append(position.ticket)
-                        logger.info(f"Closed position {position.ticket}")
-                    else:
-                        logger.error(f"Failed to close position {position.ticket}: {result.comment}")
-                        
-                except Exception as e:
-                    logger.error(f"Error closing position {position.ticket}: {e}")
-        
-        return closed_positions
-    
-    def close_position_by_volume(self, symbol, volume, position_type=None):
-        """Close positions by specified volume (partial or full)"""
-        symbol = self.get_symbol_with_suffix(symbol)
-        positions = self.get_positions(symbol)
-        
-        if position_type is not None:
-            positions = [p for p in positions if p.type == position_type]
-        
-        remaining_volume = volume
-        closed_positions = []
-        
-        for position in positions:
-            if remaining_volume <= 0:
-                break
-                
-            close_volume = min(position.volume, remaining_volume)
-            
-            try:
-                request = {
-                    "action": mt5.TRADE_ACTION_DEAL,
-                    "symbol": symbol,
-                    "volume": close_volume,
-                    "type": mt5.ORDER_TYPE_SELL if position.type == mt5.ORDER_TYPE_BUY else mt5.ORDER_TYPE_BUY,
-                    "position": position.ticket,
-                    "price": mt5.symbol_info_tick(symbol).bid if position.type == mt5.ORDER_TYPE_BUY else mt5.symbol_info_tick(symbol).ask,
-                    "deviation": 20,
-                    "magic": 0,
-                    "comment": f"Close {close_volume} lots",
-                    "type_time": mt5.ORDER_TIME_GTC,
-                    "type_filling": mt5.ORDER_FILLING_FOK,
-                }
-                
-                result = mt5.order_send(request)
-                if result.retcode == mt5.TRADE_RETCODE_DONE:
-                    closed_positions.append(position.ticket)
-                    remaining_volume -= close_volume
-                    logger.info(f"Closed {close_volume} lots from position {position.ticket}")
-                else:
-                    logger.error(f"Failed to close position {position.ticket}: {result.comment}")
-                    
-            except Exception as e:
-                logger.error(f"Error closing position {position.ticket}: {e}")
-        
-        return closed_positions
-    
-    def place_order(self, symbol, action, volume, stop_loss=None, take_profit=None):
-        """Place order with new logic"""
-        if not self.connected:
-            logger.error("Not connected to MT5")
+        self.is_connected = False
+
+    def place_market_order(self, symbol, volume, order_type, tp=None, sl=None):
+        """Places a market order (BUY or SELL)"""
+        if not self.is_connected:
+            logger.error("MT5 is not connected. Cannot place order.")
             return None
-            
-        symbol = self.get_symbol_with_suffix(symbol)
-        
+
         symbol_info = mt5.symbol_info(symbol)
         if symbol_info is None:
-            logger.error(f"Symbol {symbol} not found")
+            logger.error(f"Symbol {symbol} not found.")
+            return None
+
+        if order_type.upper() == 'BUY':
+            trade_type = mt5.ORDER_TYPE_BUY
+            price = mt5.symbol_info_tick(symbol).ask
+        elif order_type.upper() == 'SELL':
+            trade_type = mt5.ORDER_TYPE_SELL
+            price = mt5.symbol_info_tick(symbol).bid
+        else:
+            logger.error(f"Invalid market order type: {order_type}")
+            return None
+
+        request = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": symbol,
+            "volume": float(volume),
+            "type": trade_type,
+            "price": price,
+            "sl": float(sl) if sl else 0.0,
+            "tp": float(tp) if tp else 0.0,
+            "magic": 202401,
+            "comment": "Webhook Market Order",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_FOK,
+        }
+
+        result = mt5.order_send(request)
+        if result and result.retcode == mt5.TRADE_RETCODE_DONE:
+            logger.info(f"Market order executed successfully: {order_type} {volume} {symbol} @ {price}, Ticket: {result.order}")
+            return result
+        else:
+            error_message = f"Market order failed: {result.comment if result else 'No result'} (retcode: {result.retcode if result else 'N/A'})"
+            logger.error(error_message)
+            return None
+
+    def place_pending_order(self, symbol, volume, price, order_type, tp=None, sl=None):
+        """
+        Places all types of pending orders (LIMIT and STOP).
+        """
+        if not self.is_connected:
+            logger.error("MT5 is not connected. Cannot place order.")
+            return None
+
+        symbol_info = mt5.symbol_info(symbol)
+        if symbol_info is None:
+            logger.error(f"Symbol {symbol} not found.")
+            return None
+
+        order_type_map = {
+            'BUY_LIMIT': mt5.ORDER_TYPE_BUY_LIMIT,
+            'SELL_LIMIT': mt5.ORDER_TYPE_SELL_LIMIT,
+            'BUY_STOP': mt5.ORDER_TYPE_BUY_STOP,
+            'SELL_STOP': mt5.ORDER_TYPE_SELL_STOP
+        }
+
+        trade_type = order_type_map.get(order_type.upper())
+        if trade_type is None:
+            logger.error(f"Invalid pending order type: {order_type}")
+            return None
+
+        request = {
+            "action": mt5.TRADE_ACTION_PENDING,
+            "symbol": symbol,
+            "volume": float(volume),
+            "type": trade_type,
+            "price": float(price),
+            "sl": float(sl) if sl else 0.0,
+            "tp": float(tp) if tp else 0.0,
+            "magic": 202401,
+            "comment": "Webhook Pending Order",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_RETURN,
+        }
+
+        result = mt5.order_send(request)
+
+        if result is None:
+            logger.error("order_send failed, result is None")
+            return None
+            
+        if result.retcode != mt5.TRADE_RETCODE_DONE:
+            logger.error(f"Order failed: {result.comment} (retcode: {result.retcode})")
             return None
         
-        tick = mt5.symbol_info_tick(symbol)
-        if tick is None:
-            logger.error(f"Failed to get tick for {symbol}")
+        logger.info(f"Pending order placed successfully: {order_type} {volume} {symbol} @ {price}, Ticket: {result.order}")
+        return result
+
+    def close_position(self, symbol, volume_to_close):
+        """Closes a position for a given symbol by a specific volume."""
+        positions = mt5.positions_get(symbol=symbol)
+        if not positions:
+            logger.warning(f"No open positions found for {symbol} to close.")
             return None
+
+        position = positions[0]
         
-        try:
-            if action.lower() == "buy":
-                sell_positions = [p for p in self.get_positions(symbol) if p.type == mt5.ORDER_TYPE_SELL]
-                if sell_positions:
-                    logger.info(f"Closing all sell positions for {symbol} before opening buy")
-                    self.close_all_positions_by_type(symbol, mt5.ORDER_TYPE_SELL)
-                
-                order_type = mt5.ORDER_TYPE_BUY
-                price = tick.ask
-                
-            elif action.lower() == "sell":
-                buy_positions = [p for p in self.get_positions(symbol) if p.type == mt5.ORDER_TYPE_BUY]
-                if buy_positions:
-                    logger.info(f"Closing all buy positions for {symbol} before opening sell")
-                    self.close_all_positions_by_type(symbol, mt5.ORDER_TYPE_BUY)
-                
-                order_type = mt5.ORDER_TYPE_SELL
-                price = tick.bid
-                
-            elif action.lower() == "close":
-                logger.info(f"Closing {volume} lots for {symbol}")
-                closed = self.close_position_by_volume(symbol, volume)
-                return {"action": "close", "closed_positions": closed, "volume": volume}
-                
-            else:
-                logger.error(f"Unknown action: {action}")
-                return None
-            
-            request = {
-                "action": mt5.TRADE_ACTION_DEAL,
-                "symbol": symbol,
-                "volume": float(volume),
-                "type": order_type,
-                "price": price,
-                "deviation": 20,
-                "magic": 0,
-                "comment": f"{action.upper()} order",
-                "type_time": mt5.ORDER_TIME_GTC,
-                "type_filling": mt5.ORDER_FILLING_FOK,
-            }
-            
-            if stop_loss:
-                request["sl"] = float(stop_loss)
-            if take_profit:
-                request["tp"] = float(take_profit)
-            
-            result = mt5.order_send(request)
-            
-            if result.retcode == mt5.TRADE_RETCODE_DONE:
-                logger.info(f"Order executed successfully: {action.upper()} {volume} {symbol} at {price}")
-                return {
-                    "action": action,
-                    "symbol": symbol,
-                    "volume": volume,
-                    "price": price,
-                    "ticket": result.order,
-                    "success": True
-                }
-            else:
-                logger.error(f"Order failed: {result.comment}")
-                return {
-                    "action": action,
-                    "symbol": symbol,
-                    "volume": volume,
-                    "success": False,
-                    "error": result.comment
-                }
-                
-        except Exception as e:
-            logger.error(f"Error placing order: {e}")
-            return None
-    
-    def get_account_info(self):
-        """Get account information"""
-        if not self.connected:
-            return None
-            
-        try:
-            account_info = mt5.account_info()
-            if account_info:
-                return {
-                    "login": account_info.login,
-                    "balance": account_info.balance,
-                    "equity": account_info.equity,
-                    "margin": account_info.margin,
-                    "free_margin": account_info.margin_free,
-                    "profit": account_info.profit
-                }
-            return None
-            
-        except Exception as e:
-            logger.error(f"Error getting account info: {e}")
+        order_type = mt5.ORDER_TYPE_SELL if position.type == mt5.ORDER_TYPE_BUY else mt5.ORDER_TYPE_BUY
+        price = mt5.symbol_info_tick(symbol).bid if order_type == mt5.ORDER_TYPE_SELL else mt5.symbol_info_tick(symbol).ask
+
+        request = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": symbol,
+            "volume": float(volume_to_close),
+            "type": order_type,
+            "position": position.ticket,
+            "price": price,
+            "magic": 202401,
+            "comment": "Webhook Close Order",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_FOK,
+        }
+        
+        result = mt5.order_send(request)
+        if result and result.retcode == mt5.TRADE_RETCODE_DONE:
+            logger.info(f"Closed {volume_to_close} lots for position {position.ticket} on {symbol}")
+            return result
+        else:
+            logger.error(f"Failed to close position for {symbol}: {result.comment if result else 'No result'}")
             return None
