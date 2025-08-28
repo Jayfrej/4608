@@ -66,7 +66,7 @@ tradingview-alerts-to-metatrader5/
    ```bash
    cd %HOMEPATH%\Downloads
    git clone https://github.com/Jayfrej/4607.git
-   cd 101
+   cd 4607
    ```
 
 2. **Create virtual environment**
