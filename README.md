@@ -459,3 +459,7 @@ Response: [{"symbol": "EURUSD", "volume": 0.01, "profit": 1.50}]
 
 This software is for educational and research purposes. Trading involves substantial risk of loss. Use at your own risk and ensure you understand the implications of automated trading before deploying with real money.
 
+## 📄 License
+
+This project is for educational and personal use only. Please ensure compliance with your broker's terms of service and local regulations.
+
