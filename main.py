@@ -78,10 +78,27 @@ def run_server():
         config = Config()
         
         # Validate configuration
-        errors = config.validate()
-        if errors:
-            logger.error("Configuration errors:")
-            for error in errors:
+        all_errors = config.validate()
+        fatal_errors = []
+        email_warnings = []
+        email_related_keys = ["SENDER_EMAIL", "SENDER_PASSWORD", "RECEIVER_EMAIL"]
+
+        if all_errors:
+            for error in all_errors:
+                # Check if the error message is for an email setting
+                if any(key in error for key in email_related_keys):
+                    email_warnings.append(error)
+                else:
+                    fatal_errors.append(error)
+
+        # If email settings are missing, show a warning but continue
+        if email_warnings:
+            logger.warning("Email configuration is incomplete. Email alerts will be disabled.")
+
+        # If there are other critical errors, stop the application
+        if fatal_errors:
+            logger.error("Fatal configuration errors found:")
+            for error in fatal_errors:
                 logger.error(f"  - {error}")
             return False
         
