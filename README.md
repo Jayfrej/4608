@@ -1,189 +1,177 @@
-# TradingView Alerts to MT5 Integration
+# TradingView to MT5 Integration
 
-This project enables automated trading by connecting TradingView alerts to MetaTrader 5. It creates a local web server that receives webhook notifications from TradingView and executes trades in MT5 based on the parameters provided in the alert.
+A robust, automated trading solution that connects TradingView alerts directly to MetaTrader 5, enabling seamless execution of trades based on your custom indicators and strategies.
 
-
-## Architecture
-
-![Screenshot 2025-06-13 000921](https://github.com/user-attachments/assets/dd4d86f8-e871-4b48-ada2-a4f1c00ef3bf)
+<img width="1368" height="858" alt="image" src="https://github.com/user-attachments/assets/49f466a4-2cd9-47f7-8de9-a05ba4273081" />
 
 
-## Key Features
 
-- **Webhook Server**: Receives trading signals from TradingView
-- **MT5 Integration**: Executes trades directly in your MetaTrader 5 platform
-- **Symbol Suffix Support**: Handles broker-specific symbol naming conventions
-- **Position Management**: View and close positions through API endpoints
-- **Secure Tunneling**: Makes your local server accessible to TradingView using Ngrok
+## 🎯 Overview
 
-## Requirements
+This project creates a secure bridge between TradingView and MetaTrader 5 using a local Flask server and Ngrok tunneling. When your TradingView alerts trigger, they automatically execute trades in your MT5 account with customizable parameters including stop loss, take profit, and position sizing.
 
-- Python 3.11
-- MetaTrader 5 platform installed
-- TradingView account (Pro or Premium for webhook alerts)
-- Ngrok account (free tier is sufficient) for creating the webhook tunnel https://ngrok.com/
-- Postman for troubleshooting and API testing (optional)
+### How It Works
 
-## Project Structure
+1. **TradingView Alert** → Triggers webhook with trading signal
+2. **Ngrok Tunnel** → Securely forwards webhook to your local server
+3. **Flask Server** → Processes the trading signal
+4. **MT5 Integration** → Executes the trade in your MetaTrader 5 account
+
+## ✨ Key Features
+
+- 🔗 **Direct Integration**: Connect any TradingView indicator or strategy to MT5
+- 🔒 **Secure Tunneling**: Uses Ngrok for safe webhook delivery
+- ⚡ **Real-time Execution**: Instant trade execution from alerts
+- 📊 **Flexible Orders**: Supports market orders, stop loss, take profit, partial closes
+- 🏷️ **Symbol Management**: Handles broker-specific symbol suffixes
+- 📧 **Email Notifications**: Get notified of server events and errors
+- 🔧 **Position Management**: API endpoints for viewing and closing positions
+- 📱 **Easy Monitoring**: Built-in health check endpoints
+
+## 📋 Requirements
+
+| Component | Requirement |
+|-----------|-------------|
+| **Python** | 3.11+ ([Download](https://www.python.org/downloads/release/python-3110/)) |
+| **MetaTrader 5** | Installed and configured |
+| **TradingView** | Pro/Premium account (for webhook alerts) |
+| **Ngrok** | Free account ([Sign up](https://ngrok.com/)) |
+| **Email** | Gmail account (for notifications) |
+| **UptimeRobot** | Free account ([Sign up](https://uptimerobot.com)) - *Optional for monitoring* |
+
+## 📁 Project Structure
 
 ```
 tradingview-alerts-to-metatrader5/
-│
-├── app/                           # Main application package
-│   ├── __init__.py                # Package initialization
-│   ├── config.py                  # Configuration from .env
-│   ├── mt5_handler.py             # MT5 connection and trading logic
-│   ├── server.py                  # Flask server for webhooks
-│   └── utils.py                   # Utility functions
-│
-├── docs/                          # Documentation files
-│   ├── images/                    # Image assets
-│   └── README.md                  # Project documentation
-│
-├── postman/                       # Postman collection for API testing
-│   ├── README.md                  # Postman setup instructions
-│   └── postman_collection.json    # Postman collection
-│
-├── scripts/                       # Helper scripts
-│   ├── ngrok_setup.py             # Script to setup and run Ngrok
-│   ├── run_server_only.py         # Run Flask server without Ngrok
-│   ├── run_ngrok_only.py          # Run Ngrok without Flask server
-│   └── test_mt5_connection.py     # Test MT5 connection
-│
-├── .env.example                   # Example environment variables
-├── .gitignore                     # Git ignore file
-├── main.py                        # Main entry point
-├── README.md                      # This documentation
-└── requirements.txt               # Project dependencies
+├── app/                          # Core application
+│   ├── __init__.py              # Package initialization
+│   ├── config.py                # Environment configuration
+│   ├── mt5_handler.py           # MT5 trading logic
+│   ├── server.py                # Flask webhook server
+│   └── utils.py                 # Utility functions
+├── scripts/                     # Helper scripts
+│   ├── get_symbols.py           # Fetch broker symbols
+│   └── test_mt5_connection.py   # Connection testing
+├── .env.example                 # Configuration template
+├── main.py                      # Application entry point
+├── requirements.txt             # Python dependencies
+└── README.md                    # Documentation
 ```
 
-## Installation
+## 🚀 Quick Start
 
-1. **Clone the repository**: open CMD![Screenshot 2025-06-14 225440](https://github.com/user-attachments/assets/b295a41c-2b12-457d-8b74-7b89b08e3c08)
+### Step 1: Installation
 
+1. **Clone the repository**
    ```bash
    cd %HOMEPATH%\Downloads
-<<<<<<< HEAD
-   git clone https://github.com/Jayfrej/4607.git
-   cd 4607
-=======
    git clone https://github.com/Jayfrej/101.git
    cd 101
->>>>>>> 4f2411c2427be0a4552acee20eabb434c0b4834b
    ```
 
-2. **Create a virtual environment**:if (The system cannot find the path specified) put it again
+2. **Create virtual environment**
    ```bash
    python -m venv venv
-   ```
-2.1. **Create a virtual environment**:
-   ```bash
    venv\Scripts\activate.bat
    ```
+   > 💡 Your prompt should show `(venv)` when activated
 
-3. **Install dependencies**:
+3. **Install dependencies**
    ```bash
-   cd C:\Users\User\Downloads\4607
    pip install -r requirements.txt
-      ```
-<<<<<<< HEAD
-=======
-   3.1 **if it error**:
-   ```bash
-   cd C:\Users\User\Downloads\101
-   pip install -r requirements.txt
+   ```
 
-      ```
->>>>>>> 4f2411c2427be0a4552acee20eabb434c0b4834b
+### Step 2: Configuration
 
-4. **Configure environment variables**:
+1. **Create environment file**
    ```bash
    copy .env.example .env
    ```
 
-5. **Edit the `.env` file** with your MT5 account details and broker settings:
+2. **Configure your settings** (edit `.env` file):
 
-   ```
-   # MT5 Configuration
-   MT5_ACCOUNT=12345678
-   MT5_PASSWORD=your-password
-   MT5_SERVER=your-broker-server
-   MT5_PATH=C:\Program Files\MetaTrader 5\terminal64.exe
+```ini
+# =============================================================================
+# MT5 TRADING ACCOUNT CONFIGURATION
+# =============================================================================
+MT5_ACCOUNT=12345678                                    # Your MT5 account number
+MT5_PASSWORD=YourPassword                               # Your MT5 password
+MT5_SERVER=YourBroker-Demo                             # Your broker's server name
+MT5_PATH=C:\Program Files\MetaTrader 5\terminal64.exe  # Path to MT5 executable
 
+# =============================================================================
+# SYMBOL SETTINGS
+# =============================================================================
+MT5_DEFAULT_SUFFIX=                                     # Leave empty unless broker uses suffixes
 
-   # MT5 Symbol Settings
-   #MT5_DEFAULT_SUFFIX= Not put anything in here / Make it from TradingView alert
-   MT5_DEFAULT_SUFFIX=
+# =============================================================================
+# SERVER CONFIGURATION
+# =============================================================================
+FLASK_HOST=0.0.0.0
+FLASK_PORT=5000
+DEBUG=True
 
-<<<<<<< HEAD
-   # Ngrok Configuration
-   NGROK_AUTH_TOKEN=your-ngrok-auth-token
+# =============================================================================
+# NGROK TUNNELING
+# =============================================================================
+NGROK_AUTH_TOKEN=your_ngrok_auth_token_here            # Get from ngrok dashboard
 
-   # --- EMAIL ALERTS CONFIGURATION ---
-   SENDER_EMAIL="your_email@gmail.com"
-   SENDER_PASSWORD="YOUR_GMAIL_APP_PASSWORD"
-   RECEIVER_EMAIL="your_alert_email@example.com"
-   SMTP_SERVER="smtp.gmail.com"
-   SMTP_PORT="587"
-   
-   ```
-5.1 If you can't find a app password in your email use these links https://myaccount.google.com/apppasswords
-   ![Screenshot 2025-06-20 215614](https://github.com/user-attachments/assets/72be9280-ec24-488d-8d9f-16fcd08dccef)
+# =============================================================================
+# EMAIL NOTIFICATIONS
+# =============================================================================
+SENDER_EMAIL=your_email@gmail.com
+SENDER_PASSWORD=your_gmail_app_password                # Generate app password
+RECEIVER_EMAIL=alerts@yourdomain.com
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+```
 
+### Step 3: Get Required Credentials
 
-6. **Ngrok**:  Sign up and looking for Your Authtoken and put in .env![Screenshot 2025-06-14 225752](https://github.com/user-attachments/assets/8be791ec-b256-417b-b53d-e7c3d99d6491)
+#### 🔑 Ngrok Auth Token
+1. Visit [Ngrok Dashboard](https://dashboard.ngrok.com/get-started/your-authtoken)
+2. Copy your auth token
+3. Paste it in the `.env` file
 
+#### 📧 Gmail App Password
+1. Visit [Google App Passwords](https://myaccount.google.com/apppasswords)
+2. Generate a new app password
+3. Use this password (not your regular Gmail password)
 
-7. **MT5_PATH**:right click on your program and copy (.exe )![Screenshot 2025-06-14 230043](https://github.com/user-attachments/assets/5b21d87c-d40d-40dc-b8b8-935c6d35246f)
+#### 📂 MT5 Path
+1. Right-click on MetaTrader 5 executable
+2. Select "Copy as path"
+3. Paste in the `.env` file
 
-   
-=======
-   # Trading Parameters
-   # DEFAULT_VOLUME=0.01
-   # DEFAULT_STOP_LOSS=100
-   # DEFAULT_TAKE_PROFIT=200
-   
-   ```
+### Step 4: MetaTrader 5 Setup
 
-6. **Ngrok**:  Sign up and looking for Your Authtoken and put in .env![Screenshot 2025-06-14 225752](https://github.com/user-attachments/assets/8be791ec-b256-417b-b53d-e7c3d99d6491)
+1. **Enable Expert Advisor for webhooks**:
+   - Press `F4` in MT5 to open MetaEditor
+   - Create new Expert Advisor
+   - Paste the following code:
 
-
-7. **MT5_PATH**:right click on your program and copy (.exe )![Screenshot 2025-06-14 230043](https://github.com/user-attachments/assets/5b21d87c-d40d-40dc-b8b8-935c6d35246f)
-
-   
->>>>>>> 4f2411c2427be0a4552acee20eabb434c0b4834b
-8. **Go MT5 press F4 put this code/save as EA**![Screenshot 2025-06-14 230259](https://github.com/user-attachments/assets/7d8d1a7f-3359-40be-8e04-dfb2d9912d4a)
-
-
-```bash
+```mql5
 //+------------------------------------------------------------------+
-//|                                                  TradingWebhookEA.mq5|
-//|                        Fixed MQL5 Version (No Trade.mqh)            |
+//|                                           TradingWebhookEA.mq5   |
+//|                        Webhook Integration for Python Server     |
 //+------------------------------------------------------------------+
 #property strict
 
-input string WebhookURL = "http://127.0.0.1:5000/webhook"; // Local Flask URL
-input int PollingInterval = 5; // วินาที
-input double DefaultVolume = 0.01; // Default lot size
-input int Slippage = 10; // Slippage in points
-input string TradeComment = "WebhookEA"; // Order comment
-input int MagicNumber = 12345; // Magic number for orders
+input string WebhookURL = "http://127.0.0.1:5000/webhook";
+input int PollingInterval = 5;
+input double DefaultVolume = 0.01;
+input int Slippage = 10;
+input string TradeComment = "WebhookEA";
+input int MagicNumber = 12345;
 
 datetime last_poll_time = 0;
 
-//+------------------------------------------------------------------+
-//| Expert initialization function                                   |
-//+------------------------------------------------------------------+
 int OnInit()
 {
    Print("WebhookEA initialized. Polling URL: ", WebhookURL);
-   Print("Make sure to add the URL to Tools->Options->Expert Advisors->Allow WebRequest");
    return(INIT_SUCCEEDED);
 }
 
-//+------------------------------------------------------------------+
-//| Expert tick function                                             |
-//+------------------------------------------------------------------+
 void OnTick()
 {
    if (TimeCurrent() - last_poll_time < PollingInterval)
@@ -195,77 +183,26 @@ void OnTick()
    string result_headers;
    int timeout = 5000;
    
-   ResetLastError();
-   
-   int response = WebRequest(
-      "GET",
-      WebhookURL,
-      headers,
-      timeout,
-      data,
-      result,
-      result_headers
-   );
+   int response = WebRequest("GET", WebhookURL, headers, timeout, data, result, result_headers);
    
    if (response == 200 && ArraySize(result) > 0)
    {
       string json_result = CharArrayToString(result);
-      Print("Webhook response: ", json_result);
-      
-      // Parse JSON response
       string action = GetValue(json_result, "action");
       string symbol = GetValue(json_result, "symbol");
       double volume = StringToDouble(GetValue(json_result, "volume"));
       
-      // Use default volume if not specified
-      if (volume <= 0)
-         volume = DefaultVolume;
+      if (volume <= 0) volume = DefaultVolume;
+      if (symbol == "" || action == "") return;
+      if (symbol != Symbol()) symbol = Symbol();
       
-      // Validate symbol and action
-      if (symbol == "" || action == "")
-      {
-         Print("Invalid signal: action=", action, ", symbol=", symbol);
-         last_poll_time = TimeCurrent();
-         return;
-      }
-      
-      // Use current symbol if different symbol specified
-      if (symbol != Symbol())
-      {
-         Print("Signal for different symbol: ", symbol, " (using current: ", Symbol(), ")");
-         symbol = Symbol();
-      }
-      
-      // Execute trades using native MQL5 functions
-      if (action == "buy")
-      {
-         ExecuteBuyOrder(symbol, volume);
-      }
-      else if (action == "sell")
-      {
-         ExecuteSellOrder(symbol, volume);
-      }
-      else
-      {
-         Print("Unknown action: ", action);
-      }
-   }
-   else
-   {
-      if (response != 200 && response != -1)
-         Print("WebRequest failed with response code: ", response);
-      
-      int error = GetLastError();
-      if (error != 0)
-         Print("WebRequest error: ", error, " - ", GetErrorDescription(error));
+      if (action == "buy") ExecuteBuyOrder(symbol, volume);
+      else if (action == "sell") ExecuteSellOrder(symbol, volume);
    }
    
    last_poll_time = TimeCurrent();
 }
 
-//+------------------------------------------------------------------+
-//| Execute Buy Order using MqlTradeRequest                         |
-//+------------------------------------------------------------------+
 void ExecuteBuyOrder(string symbol, double volume)
 {
    MqlTradeRequest request = {};
@@ -279,26 +216,10 @@ void ExecuteBuyOrder(string symbol, double volume)
    request.deviation = Slippage;
    request.magic = MagicNumber;
    request.comment = TradeComment;
-   request.type_filling = ORDER_FILLING_FOK;
    
-   if (OrderSend(request, result))
-   {
-      Print("Buy order sent successfully for ", symbol, 
-            " Volume: ", volume, 
-            " Price: ", request.price,
-            " Ticket: ", result.order);
-   }
-   else
-   {
-      Print("Failed to send buy order. Error: ", GetLastError(), 
-            " Result: ", result.retcode, 
-            " Comment: ", result.comment);
-   }
+   OrderSend(request, result);
 }
 
-//+------------------------------------------------------------------+
-//| Execute Sell Order using MqlTradeRequest                        |
-//+------------------------------------------------------------------+
 void ExecuteSellOrder(string symbol, double volume)
 {
    MqlTradeRequest request = {};
@@ -312,59 +233,15 @@ void ExecuteSellOrder(string symbol, double volume)
    request.deviation = Slippage;
    request.magic = MagicNumber;
    request.comment = TradeComment;
-   request.type_filling = ORDER_FILLING_FOK;
    
-   if (OrderSend(request, result))
-   {
-      Print("Sell order sent successfully for ", symbol, 
-            " Volume: ", volume, 
-            " Price: ", request.price,
-            " Ticket: ", result.order);
-   }
-   else
-   {
-      Print("Failed to send sell order. Error: ", GetLastError(), 
-            " Result: ", result.retcode, 
-            " Comment: ", result.comment);
-   }
+   OrderSend(request, result);
 }
 
-//+------------------------------------------------------------------+
-//| Simple JSON parser function                                      |
-//+------------------------------------------------------------------+
 string GetValue(string json, string key)
 {
    string pattern = "\"" + key + "\":\"";
    int start = StringFind(json, pattern);
-   
-   if (start == -1) 
-   {
-      // Try without quotes (for numeric values)
-      pattern = "\"" + key + "\":";
-      start = StringFind(json, pattern);
-      if (start == -1) return "";
-      start += StringLen(pattern);
-      
-      // Skip whitespace
-      while (start < StringLen(json) && StringGetCharacter(json, start) == 32)
-         start++;
-      
-      // Find the end (comma, closing brace, or end of string)
-      int end = start;
-      while (end < StringLen(json))
-      {
-         int ch = StringGetCharacter(json, end);
-         if (ch == 44 || ch == 125 || ch == 93) // comma, }, ]
-            break;
-         end++;
-      }
-      
-      if (end <= start) return "";
-      string value = StringSubstr(json, start, end - start);
-      StringTrimLeft(value);
-      StringTrimRight(value);
-      return value;
-   }
+   if (start == -1) return "";
    
    start += StringLen(pattern);
    int end = StringFind(json, "\"", start);
@@ -372,120 +249,218 @@ string GetValue(string json, string key)
    
    return StringSubstr(json, start, end - start);
 }
+```
 
-//+------------------------------------------------------------------+
-//| Get error description                                            |
-//+------------------------------------------------------------------+
-string GetErrorDescription(int error_code)
+2. **Save and compile** the Expert Advisor
+3. **Add to chart** and enable automated trading
+
+## ▶️ Running the Application
+
+### First Time Setup
+```bash
+python main.py
+```
+
+The application will:
+- ✅ Initialize MT5 connection
+- ✅ Start the Flask webhook server
+- ✅ Create Ngrok tunnel
+- ✅ Generate webhook URL
+- ✅ Save URL to `webhook_url.txt`
+
+### Subsequent Runs
+```bash
+cd C:\Users\YourUser\Downloads\101
+venv\Scripts\activate.bat
+python main.py
+```
+
+### Check Available Symbols
+```bash
+python get_symbols.py
+```
+
+## 📈 TradingView Alert Setup
+
+### 1. Get Your Webhook URL
+After running `python main.py`, find your webhook URL in `webhook_url.txt`. It will look like:
+```
+https://abc123.ngrok-free.app/trade
+```
+
+### 2. Create TradingView Alert
+1. In TradingView, create or edit an alert
+2. Go to **Notifications** tab
+3. Enable **Webhook URL**
+4. Paste your webhook URL
+5. Configure the message (see examples below)
+
+### 3. Alert Message Examples
+
+#### 🎯 Strategy-Based (Recommended)
+```json
 {
-   switch(error_code)
-   {
-      case 4060: return "No internet connection";
-      case 4014: return "Unknown symbol";
-      case 4751: return "Invalid URL";
-      case 4752: return "Failed to connect to specified URL";
-      case 4753: return "Timeout exceeded";
-      case 4754: return "HTTP error";
-      case 5203: return "URL not allowed for WebRequest";
-      case 4809: return "Resource not found";
-      default: return "Error code: " + IntegerToString(error_code);
-   }
+    "symbol": "{{ticker}}",
+    "action": "{{strategy.order.action}}",
+    "volume": "{{strategy.order.contracts}}"
 }
 ```
 
-9. **run**: copy webhook to TV and MT5
- ![image](https://github.com/user-attachments/assets/e48bd5fc-08f9-4bfb-8556-095d4df9c84c)
-![image](https://github.com/user-attachments/assets/fba7f04a-11c2-4a70-a856-353998849324)
-![Screenshot 2025-06-14 230457](https://github.com/user-attachments/assets/7eed188a-7cd3-4b8b-88b0-960be4948200)
+#### 📊 Fixed Volume Trades
+```json
+{
+    "symbol": "{{ticker}}",
+    "action": "buy",
+    "volume": "0.01"
+}
+```
 
+#### 🎛️ Advanced with Stop Loss/Take Profit
+```json
+{
+    "symbol": "XAUUSD",
+    "action": "sell",
+    "volume": "0.02",
+    "sl": "2380.00",
+    "tp": "2360.00"
+}
+```
 
+#### 🔒 Close Position
+```json
+{
+    "symbol": "{{ticker}}",
+    "action": "close",
+    "volume": "0.01"
+}
+```
 
-   ```bash
-   python main.py
-      ```
-## For open next time
+## 🔧 Monitoring & Health Checks
 
-1
- ```bash
-   cd C:\Users\User\Downloads\4607
- ```
-2
-   ```bash
-   python main.py
- ```
+### Built-in Endpoints
+- `https://your-ngrok-url.app/health` - Health status
+- `https://your-ngrok-url.app/positions` - View open positions
+- `https://your-ngrok-url.app/close/<symbol>` - Close positions
 
+### Recommended Monitoring
+Use [UptimeRobot](https://uptimerobot.com) to monitor your health endpoint:
+```
+https://your-ngrok-url.app/health
+```
 
+## 🚨 Troubleshooting
 
+### Common Issues & Solutions
 
-## Setting Up TradingView Alerts
+#### ❌ "Symbol not found"
+**Problem**: `Symbol eurusdEURUSD not found`
+**Solution**: 
+- Run `python get_symbols.py` to see exact symbol names
+- Ensure `MT5_DEFAULT_SUFFIX` is correctly set (usually empty)
+- Match TradingView symbol with MT5 Market Watch exactly
 
-1. **Create an alert in TradingView**:
+#### ❌ "Invalid stops (retcode: 10016)"
+**Problem**: Stop loss/take profit too close to market price
+**Solution**: 
+- Increase distance between entry and SL/TP
+- Check your broker's minimum stop level requirements
+- Ensure SL is below entry for buy orders, above entry for sell orders
 
-   - Set up your indicator or strategy
-   - Click "Create Alert"
-   - Configure your alert conditions
+#### ❌ "Invalid volume format"
+**Problem**: `'{{strategy.order.contracts}}'` not resolving
+**Solution**: 
+- Ensure your strategy actually places orders
+- Use fixed volume like `"0.01"` for testing
+- Check alert triggers when valid trades exist
 
-2. **Configure the webhook**:
+#### ❌ "Unknown action"
+**Problem**: Action field contains invalid value
+**Solution**: 
+- Use only: `buy`, `sell`, `long`, `short`, or `close`
+- Verify `{{strategy.order.action}}` resolves correctly
+- Test with fixed action like `"buy"` first
 
-   - In the "Webhook URL" field, paste the Ngrok URL from `webhook_url.txt` (it will look like `https://xxxx.ngrok-free.app/trade`)
+## 🏭 Production Deployment
 
-3. **Format your alert message as JSON**:
+### For 24/7 Operation
 
-   ```json
-   {
-   "symbol": "{{ticker}}",
-   "action": "{{strategy.order.action}}",
-   "volume": "{{strategy.order.contracts}}"
-   }
-   ```
-    Buy 0.1 lot
-   
-   ```json
-   {
-   "symbol": "{{ticker}}",
-   "action": "buy",
-   "volume": "0.1"
-   }
-   ```
-    Sell 0.2 lot
-   
-    ```json
-    {
-      "symbol": "{{ticker}}",
-      "action": "sell",
-      "volume": "0.2"
-    }
-    ```
-      Close 0.05 lot
-    ```json
-    {
-      "symbol": "{{ticker}}",
-      "action": "close",
-      "volume": "0.05"
-    }
-    ```
+1. **Use a VPS (Recommended)**
+   - Deploy on Windows VPS with MT5 installed
+   - Ensures continuous operation
+   - Better internet connectivity
 
-   1. **Use a VPS**:
+2. **Replace Ngrok (Optional)**
+   - Register domain name
+   - Use reverse proxy (Nginx/Apache)
+   - Configure SSL certificates
+   - Set up proper authentication
 
-   - Run the application on a Virtual Private Server for 24/7 operation
-   - This ensures your application keeps running even when your computer is off
+3. **Enhanced Security**
+   - Add API key authentication
+   - Implement request signing
+   - Use IP whitelisting
+   - Monitor for suspicious activity
 
-2. **Replace Ngrok with a proper server**:
+### Environment-Specific Commands
 
-   - Register a domain name
-   - Use a reverse proxy (Nginx, Apache) with SSL certificates
-   - Configure proper port forwarding
+**Development**:
+```bash
+python main.py
+```
 
-3. **Add authentication**:
-   - Implement API key authentication for your webhook
-   - This prevents unauthorized access to your trading system
+**Production**:
+```bash
+python main.py --production
+```
 
-## License
+## 📝 API Reference
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### Webhook Endpoint
+```
+POST /trade
+Content-Type: application/json
 
-## Acknowledgements
+{
+    "symbol": "EURUSD",
+    "action": "buy|sell|close",
+    "volume": "0.01",
+    "sl": "1.0500",      // Optional
+    "tp": "1.0600"       // Optional
+}
+```
 
-- [MetaTrader5 Python Library](https://pypi.org/project/MetaTrader5/)
-- [Flask](https://flask.palletsprojects.com/)
-- [Ngrok](https://ngrok.com/)
+### Health Check
+```
+GET /health
+Response: {"status": "healthy", "mt5_connected": true}
+```
+
+### Position Management
+```
+GET /positions
+Response: [{"symbol": "EURUSD", "volume": 0.01, "profit": 1.50}]
+```
+
+## 🤝 Support
+
+### Getting Help
+- 📖 Read this documentation thoroughly
+- 🔍 Check the troubleshooting section
+- 📋 Review logs for error messages
+- 🧪 Test with simple fixed-value alerts first
+
+### Contributing
+1. Fork the repository
+2. Create feature branch
+3. Make changes with tests
+4. Submit pull request
+
+## ⚠️ Disclaimer
+
+This software is for educational and research purposes. Trading involves substantial risk of loss. Use at your own risk and ensure you understand the implications of automated trading before deploying with real money.
+
+## 📄 License
+
+MIT License - see LICENSE file for details.
+
+---
